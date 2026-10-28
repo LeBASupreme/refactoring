@@ -23,5 +23,6 @@ public class Flotte {
         vehicules.add(new Train("TR-0001", 600000));
         vehicules.add(new BateauFrigorifique("CMA-CGM-01", 20000000));
         vehicules.add(new Avion("F-GTXA", 100000));
+        vehicules.add(new Peniche("PEN-0001", 2_500_000));
     }
 }
