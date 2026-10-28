@@ -6,46 +6,50 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Accès à la base de données (simulée en mémoire pour l'instant).
+ * Dépôt en mémoire. Les requêtes sont affichées sur la console.
  */
-public class Database {
+public class Database implements ClientRepository, ExpeditionRepository {
 
-    private static Database instance;
+    private final Map<String, Expedition> expeditions = new HashMap<String, Expedition>();
+    private final Map<String, Client> clients = new HashMap<String, Client>();
 
-    public static Map<String, Expedition> expeditions = new HashMap<String, Expedition>();
-    public static Map<String, Client> clients = new HashMap<String, Client>();
-
-    private Database() {
+    public Database() {
         System.out.println("[DB] Connexion à jdbc:mysql://prod-db.transfret.local:3306/transfret");
-    }
-
-    public static Database getInstance() {
-        if (instance == null) {
-            instance = new Database();
-        }
-        return instance;
     }
 
     public void executer(String sql) {
         System.out.println("[SQL] " + sql);
     }
 
-    public void sauvegarderClient(Client c) {
+    @Override
+    public void sauvegarder(Client c) {
         executer("INSERT INTO client (nom, email, telephone, type) VALUES ('" + c.getNom() + "', '" + c.getEmail() + "', '" + c.getTelephone() + "', '" + c.getType() + "')");
         clients.put(c.getEmail(), c);
     }
 
-    public void sauvegarderExpedition(Expedition e) {
+    @Override
+    public Client trouverParEmail(String email) {
+        return clients.get(email);
+    }
+
+    @Override
+    public void sauvegarder(Expedition e) {
         executer("INSERT INTO expedition (id, client, depart, arrivee, mode, statut, prix_ttc) VALUES ('" + e.getId() + "', '" + e.getClient().getEmail() + "', '" + e.getVilleDepart() + "', '" + e.getVilleArrivee() + "', '" + e.getMode() + "', '" + e.getStatut() + "', " + e.getPrixTTC() + ")");
         expeditions.put(e.getId(), e);
     }
 
+    @Override
     public void mettreAJourStatut(Expedition e) {
         executer("UPDATE expedition SET statut = '" + e.getStatut() + "' WHERE id = '" + e.getId() + "'");
     }
 
-    public Expedition trouverExpedition(String id) {
+    @Override
+    public Expedition trouver(String id) {
         executer("SELECT * FROM expedition WHERE id = '" + id + "'");
+        return expeditions.get(id);
+    }
+
+    public Expedition lire(String id) {
         return expeditions.get(id);
     }
 
