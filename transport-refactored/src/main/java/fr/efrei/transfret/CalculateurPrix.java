@@ -4,26 +4,10 @@ import java.util.List;
 
 public class CalculateurPrix {
 
-
-    private static final double TARIF_ROUTE_PAR_KM = 1.2;
-    private static final double TARIF_ROUTE_PAR_KG = 0.10;
-    private static final double TARIF_RAIL_PAR_KM = 0.8;
-    private static final double TARIF_RAIL_PAR_KG = 0.07;
-    private static final double MINIMUM_RAIL = 150;
-    private static final double TARIF_MER_PAR_KM = 0.5;
-    private static final double TARIF_MER_PAR_KG = 0.03;
-    private static final double MINIMUM_MER = 500;
-    private static final double DIVISEUR_VOLUMETRIQUE_AIR = 167;
-    private static final double TARIF_AIR_PAR_KM = 0.6;
-    private static final double TARIF_AIR_PAR_KG = 4.5;
     private static final double COEFFICIENT_FRAGILE = 1.15;
     private static final double COEFFICIENT_DANGEREUX = 1.30;
     private static final double COEFFICIENT_REFRIGERE = 1.20;
     private static final double COEFFICIENT_URGENCE = 1.5;
-    private static final double SEUIL_REMISE_ENTREPRISE = 5000;
-    private static final double COEFFICIENT_ENTREPRISE_AU_DESSUS_DU_SEUIL = 0.85;
-    private static final double COEFFICIENT_ENTREPRISE = 0.90;
-    private static final double COEFFICIENT_PREMIUM = 0.80;
     private static final double TAUX_ASSURANCE = 0.02;
     private static final double MINIMUM_ASSURANCE = 15;
 
@@ -43,44 +27,15 @@ public class CalculateurPrix {
             if (c.getType() == TypeMarchandise.REFRIGERE) refrigere = true;
         }
 
-        // tarif de base selon le mode
-        double prix;
-        if (mode == ModeTransport.ROUTE) {
-            prix = distance * TARIF_ROUTE_PAR_KM + poids * TARIF_ROUTE_PAR_KG;
-        } else if (mode == ModeTransport.RAIL) {
-            prix = distance * TARIF_RAIL_PAR_KM + poids * TARIF_RAIL_PAR_KG;
-            if (prix < MINIMUM_RAIL) prix = MINIMUM_RAIL;
-        } else if (mode == ModeTransport.MER) {
-            prix = distance * TARIF_MER_PAR_KM + poids * TARIF_MER_PAR_KG;
-            if (prix < MINIMUM_MER) prix = MINIMUM_MER;
-        } else if (mode == ModeTransport.AIR) {
-            double poidsTaxable = poids;
-            if (volume * DIVISEUR_VOLUMETRIQUE_AIR > poids) {
-                poidsTaxable = volume * DIVISEUR_VOLUMETRIQUE_AIR;
-            }
-            prix = distance * TARIF_AIR_PAR_KM + poidsTaxable * TARIF_AIR_PAR_KG;
-        } else {
-            throw new IllegalArgumentException("Mode inconnu : " + mode);
-        }
+        double prix = mode.tarif().prixDeBase(poids, volume, distance);
 
-        // suppléments
         if (fragile) prix = prix * COEFFICIENT_FRAGILE;
         if (dangereux) prix = prix * COEFFICIENT_DANGEREUX;
         if (refrigere) prix = prix * COEFFICIENT_REFRIGERE;
         if (urgent) prix = prix * COEFFICIENT_URGENCE;
 
-        // remise client
-        if (typeClient == TypeClient.ENTREPRISE) {
-            if (prix > SEUIL_REMISE_ENTREPRISE) {
-                prix = prix * COEFFICIENT_ENTREPRISE_AU_DESSUS_DU_SEUIL;
-            } else {
-                prix = prix * COEFFICIENT_ENTREPRISE;
-            }
-        } else if (typeClient == TypeClient.PREMIUM) {
-            prix = prix * COEFFICIENT_PREMIUM;
-        }
+        prix = typeClient.remise().appliquer(prix);
 
-        // assurance
         if (assurance) {
             double montantAssurance = valeur * TAUX_ASSURANCE;
             if (montantAssurance < MINIMUM_ASSURANCE) montantAssurance = MINIMUM_ASSURANCE;
