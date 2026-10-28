@@ -19,15 +19,9 @@ public interface IVehicule {
 
     void decharger(Colis colis);
 
-    void rouler(int km);
-
-    void naviguer(int milesNautiques);
-
-    void voler(int altitude);
-
-    void activerRefrigeration(double temperature);
-
     boolean peutTransporterMatieresDangereuses();
 
     void faireLePlein();
+
+    void partir(int distance);
 }

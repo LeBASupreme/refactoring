@@ -9,9 +9,6 @@ public class ServiceExpedition {
 
     private int compteur = 0;
     private static final double TAUX_TVA = 1.2;
-    private static final double KM_PAR_MILLE_NAUTIQUE = 1.852;
-    private static final int ROULAGE_PISTE_KM = 2;
-    private static final int ALTITUDE_CROISIERE = 35000;
     private static final double TEMPERATURE_REFRIGERATION = 4;
     private static final double TAUX_FRAIS_ANNULATION = 0.5;
 
@@ -93,21 +90,11 @@ public class ServiceExpedition {
         e.setStatut(StatutExpedition.EN_COURS);
         Vehicule v = e.getVehicule();
         v.setDisponible(false);
-        try {
-            v.faireLePlein();
-        } catch (Exception ex) {
-        }
-        if (e.getMode() == ModeTransport.ROUTE || e.getMode() == ModeTransport.RAIL) {
-            v.rouler(e.getDistance());
-        } else if (e.getMode() == ModeTransport.MER) {
-            v.naviguer((int) (e.getDistance() / KM_PAR_MILLE_NAUTIQUE));
-        } else if (e.getMode() == ModeTransport.AIR) {
-            v.rouler(ROULAGE_PISTE_KM);
-            v.voler(ALTITUDE_CROISIERE);
-        }
+        v.faireLePlein();
+        v.partir(e.getDistance());
         for (Colis c : e.getColis()) {
             if (c.getType() == TypeMarchandise.REFRIGERE) {
-                v.activerRefrigeration(TEMPERATURE_REFRIGERATION);
+                ((Refrigerant) v).activerRefrigeration(TEMPERATURE_REFRIGERATION);
                 break;
             }
         }

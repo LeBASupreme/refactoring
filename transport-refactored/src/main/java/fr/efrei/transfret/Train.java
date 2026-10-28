@@ -1,25 +1,21 @@
 package fr.efrei.transfret;
 
-public class Train extends Vehicule {
+import java.util.List;
+
+public class Train extends Vehicule implements Roulant {
 
     public Train(String immatriculation, double capaciteMax) {
         super(immatriculation, capaciteMax);
     }
 
+    @Override
     public void rouler(int km) {
         System.out.println("Le train " + immatriculation + " circule sur " + km + " km de voies ferrées");
     }
 
-    public void naviguer(int milesNautiques) {
-        throw new UnsupportedOperationException("Un train ne navigue pas");
-    }
-
-    public void voler(int altitude) {
-        throw new UnsupportedOperationException("Un train ne vole pas");
-    }
-
-    public void activerRefrigeration(double temperature) {
-        throw new UnsupportedOperationException("Pas de wagons frigorifiques");
+    @Override
+    public void partir(int distance) {
+        rouler(distance);
     }
 
     public boolean peutTransporterMatieresDangereuses() {
@@ -27,7 +23,12 @@ public class Train extends Vehicule {
     }
 
     @Override
+    protected boolean accepte(List<Colis> colis, ModeTransport mode) {
+        return mode == ModeTransport.RAIL;
+    }
+
+    @Override
     public void faireLePlein() {
-        throw new UnsupportedOperationException("Un train électrique ne fait pas le plein");
+        // Un train électrique ne consomme pas de carburant.
     }
 }
