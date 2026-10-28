@@ -4,43 +4,16 @@ import java.util.List;
 
 public class CalculateurPrix {
 
-    private static final double COEFFICIENT_FRAGILE = 1.15;
-    private static final double COEFFICIENT_DANGEREUX = 1.30;
-    private static final double COEFFICIENT_REFRIGERE = 1.20;
-    private static final double COEFFICIENT_URGENCE = 1.5;
-    private static final double TAUX_ASSURANCE = 0.02;
-    private static final double MINIMUM_ASSURANCE = 15;
-
     public double calculerPrixHT(List<Colis> colis, int distance, ModeTransport mode, boolean urgent, boolean assurance, TypeClient typeClient) {
-        double poids = 0;
-        double volume = 0;
-        double valeur = 0;
-        boolean fragile = false;
-        boolean dangereux = false;
-        boolean refrigere = false;
-        for (Colis c : colis) {
-            poids = poids + c.getPoids();
-            volume = volume + c.getVolume();
-            valeur = valeur + c.getValeurDeclaree();
-            if (c.getType() == TypeMarchandise.FRAGILE) fragile = true;
-            if (c.getType() == TypeMarchandise.DANGEREUX) dangereux = true;
-            if (c.getType() == TypeMarchandise.REFRIGERE) refrigere = true;
-        }
-
-        double prix = mode.tarif().prixDeBase(poids, volume, distance);
-
-        if (fragile) prix = prix * COEFFICIENT_FRAGILE;
-        if (dangereux) prix = prix * COEFFICIENT_DANGEREUX;
-        if (refrigere) prix = prix * COEFFICIENT_REFRIGERE;
-        if (urgent) prix = prix * COEFFICIENT_URGENCE;
-
-        prix = typeClient.remise().appliquer(prix);
-
-        if (assurance) {
-            double montantAssurance = valeur * TAUX_ASSURANCE;
-            if (montantAssurance < MINIMUM_ASSURANCE) montantAssurance = MINIMUM_ASSURANCE;
-            prix = prix + montantAssurance;
-        }
-        return Utils.arrondir(prix);
+        Expedition expedition = new Expedition();
+        expedition.setColis(colis);
+        expedition.setDistance(distance);
+        expedition.setMode(mode);
+        expedition.setUrgent(urgent);
+        expedition.setAssurance(assurance);
+        Client client = new Client();
+        client.setType(typeClient);
+        expedition.setClient(client);
+        return Utils.arrondir(new AssembleurPrix().assembler(expedition).calculer(expedition));
     }
 }
